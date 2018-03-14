@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="17C88" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
-        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -34,19 +33,24 @@
                                 </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SC1-FK-O09">
-                                <rect key="frame" x="45" y="115" width="279" height="200"/>
+                                <rect key="frame" x="0.0" y="130" width="375" height="262"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="200" id="O05-FT-DRb"/>
+                                    <constraint firstAttribute="height" constant="262" id="bfz-rz-N3I"/>
                                 </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.borderWidth">
+                                        <real key="value" value="0.5"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="SC1-FK-O09" firstAttribute="trailing" secondItem="8RO-zq-Ah6" secondAttribute="trailing" multiplier="0.9" id="7rQ-ce-5sf"/>
+                            <constraint firstItem="SC1-FK-O09" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Eph-hh-Me4"/>
+                            <constraint firstItem="SC1-FK-O09" firstAttribute="top" secondItem="8RO-zq-Ah6" secondAttribute="bottom" constant="30" id="OzW-sl-YFr"/>
+                            <constraint firstAttribute="trailing" secondItem="SC1-FK-O09" secondAttribute="trailing" id="R6r-ha-b9y"/>
                             <constraint firstAttribute="trailing" secondItem="8RO-zq-Ah6" secondAttribute="trailing" constant="15" id="XLo-eh-N0C"/>
-                            <constraint firstItem="SC1-FK-O09" firstAttribute="leading" secondItem="8RO-zq-Ah6" secondAttribute="leading" multiplier="3" id="f6Z-FP-8sr"/>
                             <constraint firstItem="8RO-zq-Ah6" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="rMp-ox-uDX"/>
-                            <constraint firstItem="SC1-FK-O09" firstAttribute="top" secondItem="8RO-zq-Ah6" secondAttribute="bottom" constant="15" id="tQ1-I6-2NR"/>
                             <constraint firstItem="8RO-zq-Ah6" firstAttribute="top" secondItem="g8u-3r-zYv" secondAttribute="bottom" constant="50" id="xbE-bN-emJ"/>
                         </constraints>
                     </view>

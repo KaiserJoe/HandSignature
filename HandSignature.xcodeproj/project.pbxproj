@@ -18,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9F9BCE4B2058F43F00B7193A /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		F8294CFA1FB3E9300011D601 /* HandSignature.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandSignature.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8294CFD1FB3E9300011D601 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F8294CFE1FB3E9300011D601 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -74,6 +75,7 @@
 				F8294D081FB3E9300011D601 /* LaunchScreen.storyboard */,
 				F8294D0B1FB3E9300011D601 /* Info.plist */,
 				F8294D0C1FB3E9300011D601 /* main.m */,
+				9F9BCE4B2058F43F00B7193A /* PrefixHeader.pch */,
 			);
 			path = HandSignature;
 			sourceTree = "<group>";
@@ -300,6 +302,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 95BFKR6QPQ;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/HandSignature/PrefixHeader.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/HandSignature/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -315,6 +319,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 95BFKR6QPQ;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/HandSignature/PrefixHeader.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/HandSignature/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

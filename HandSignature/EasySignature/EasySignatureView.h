@@ -11,16 +11,6 @@
 
 //代理
 @protocol SignatureViewDelegate <NSObject>
-
-/**
- 获取截图图片
- 
- @param image 手写绘制图
- */
-@optional
-- (void)getSignatureImg:(UIImage*)image;
-
-
 /**
  产生签名手写动作
  */
@@ -35,9 +25,6 @@
 @interface EasySignatureView : UIView {
     CGFloat min;
     CGFloat max;
-    CGRect origRect;
-    CGFloat origionX;
-    CGFloat totalWidth;
     BOOL  isSure;
 }
 
@@ -45,7 +32,6 @@
 @property (nonatomic, strong) NSString       *showMessage;//签名完成后的水印文字
 @property (nonatomic, strong) UIImage        *SignatureImg;
 @property (nonatomic, strong) NSMutableArray *currentPointArr;
-@property (nonatomic, assign) BOOL           hasSignatureImg;
 @property (nonatomic, assign) id<SignatureViewDelegate> delegate;
 
 /**
@@ -57,6 +43,8 @@
 /**
  确定
  */
-- (void)sure;
+- (void)sure:(UIButton *)sender;
 
+
+-(UIImage *) imageRepresentation;
 @end

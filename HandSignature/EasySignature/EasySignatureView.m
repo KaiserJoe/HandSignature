@@ -49,7 +49,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     
     self.currentPointArr = [NSMutableArray arrayWithCapacity:0];
     self.totalArr        = [NSMutableArray arrayWithCapacity:0];
-    self.hasSignatureImg = NO;
+    
     isHaveDraw           = NO;
     emptyFlag            = 0;
     indexFlag            = 0;
@@ -93,6 +93,200 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     [self addGestureRecognizer:pan];
 }
 
+/**
+ *  @author Kaiser
+ *
+ *  书写痕迹
+ */
+- (void)pan:(UIPanGestureRecognizer *)pan
+{
+    isHaveDraw           = YES;
+    CGPoint currentPoint = [pan locationInView:self];
+    CGPoint midPoint     = midpoint(previousPoint, currentPoint);
+
+    if (path.isEmpty)
+        [self.oneSecond setFireDate:[NSDate date]];
+    
+    //临时点
+    [self.currentPointArr addObject:[NSValue valueWithCGPoint:currentPoint]];
+    
+    CGFloat viewHeight   = self.frame.size.height;
+    CGFloat currentY     = currentPoint.y;//触点Y
+    
+    
+    if (pan.state ==UIGestureRecognizerStateBegan)
+        [path moveToPoint:currentPoint];
+    else if (pan.state ==UIGestureRecognizerStateChanged)
+        [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
+    
+    
+    if(0 <= currentY && currentY <= viewHeight)
+    {//确定截图大小,判断是否draw
+        if(max == 0&&min == 0)
+        {
+            max = currentPoint.x;
+            min = currentPoint.x;
+        }
+        else
+        {
+            if(max <= currentPoint.x)
+            {
+                max = currentPoint.x;
+            }
+            if(min>=currentPoint.x)
+            {
+                min = currentPoint.x;
+            }
+        }
+        
+    }
+
+    previousPoint = currentPoint;
+    
+    [self setNeedsDisplay];
+    
+    if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSignatureWriteAction)]) {
+        [self.delegate onSignatureWriteAction];
+    }
+}
+
+- (void)drawRect:(CGRect)rect
+{
+    [path stroke];
+    
+    if(!isHaveDraw)
+    {//No
+        NSString *str = @"此处手写签名: 正楷, 工整书写";
+        CGRect rect1  = CGRectMake((rect.size.width -StrWidth)/2, (rect.size.height -StrHeight)/3-5,StrWidth, StrHeight);
+        [str drawInRect:rect1 withAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15],NSForegroundColorAttributeName:RGB(199, 199, 199)}];
+    }
+}
+
+
+- (void)clear
+{
+    [self.oneSecond setFireDate:[NSDate distantFuture]];
+    [self.totalArr removeAllObjects];
+    [self.currentPointArr removeAllObjects];
+    
+    [self removeAllSubLeyer];
+    
+    max = 0;
+    min = 0;
+    [path removeAllPoints];
+    isHaveDraw = NO;
+    
+    [self setNeedsDisplay];
+}
+
+
+- (void)sure:(UIButton*)sender{
+    
+    //绘制
+    if (indexFlag == 0 ) {
+        sender.userInteractionEnabled = NO;//防止扰乱动画
+        sender.tag                    = 111;
+        
+        [self removeAllSubLeyer];
+        [path removeAllPoints];
+
+        [self.oneSecond setFireDate:[NSDate distantFuture]];
+        [self.currentPointArr removeAllObjects];
+        
+        [self setNeedsDisplay];
+    }
+    
+    
+    
+    NSMutableArray * tempArr  = [self.totalArr objectAtIndex:indexFlag];
+
+    [tempArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+     
+        CGPoint currentPoint = [obj CGPointValue];
+        CGPoint midPoint     = midpoint(previousPoint, currentPoint);
+        
+        if (indexFlag == 0)
+            [path moveToPoint:currentPoint];
+        else
+            [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
+        
+        previousPoint = currentPoint;
+    }];
+    
+    CAShapeLayer * AnimLayer;
+    
+    AnimLayer             = [CAShapeLayer layer];
+    AnimLayer.path        = path.CGPath;
+    AnimLayer.lineWidth   = 2.f;
+    AnimLayer.strokeColor = [UIColor blackColor].CGColor;
+    AnimLayer.fillColor = [UIColor clearColor].CGColor;
+    AnimLayer.strokeStart = 0.f;//设置起点为 0
+    AnimLayer.strokeEnd   = 0.f;//设置终点为 0
+    
+    [self.layer addSublayer:AnimLayer];
+    
+    
+    CABasicAnimation *animation   = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
+    animation.delegate            = self;
+    animation.duration            = 1.f;// 持续时间
+    animation.fromValue           = @(0);// 从 0 开始
+    animation.toValue             = @(1);// 到 1 结束
+    animation.removedOnCompletion = NO;//保持动画结束时的状态
+    animation.fillMode            = kCAFillModeForwards;
+    animation.timingFunction      = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    
+    [AnimLayer addAnimation:animation forKey:@""];
+    
+}
+
+-(void)removeAllSubLeyer
+{
+    NSArray<CALayer *> *tempArr =[self.layer sublayers];
+    NSArray<CALayer *> *TempArr2 = [tempArr filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:<#^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings)block#>]]
+    
+    for (CALayer* tempLayer in tempArr) {
+        [tempLayer setHidden:YES];
+    }
+}
+
+-(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+    indexFlag++;
+    if (indexFlag != self.totalArr.count) {
+        [self sure:nil];
+    }
+    else
+    {
+        UIButton * tmpBtn = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
+        tmpBtn.userInteractionEnabled = YES;
+        indexFlag = 0;
+    }
+}
+
+#pragma mark - -- MakeImage ---
+
+
+-(UIImage *) imageRepresentation {
+    
+    UIGraphicsBeginImageContextWithOptions(self.bounds.size,NO, [UIScreen mainScreen].scale);
+    
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage *image =UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+//        image = [self imageBlackToTransparent:image];
+    
+    NSLog(@"width:%f,height:%f",image.size.width,image.size.height);
+    
+    //    UIImage *img = [self cutImage:image];
+    
+    self.SignatureImg = image;//[self scaleToSize:img];
+    
+    return self.SignatureImg;
+}
+
 
 - (UIImage*) imageBlackToTransparent:(UIImage*) image
 {
@@ -105,7 +299,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     // 创建context
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGContextRef context       = CGBitmapContextCreate(rgbImageBuf, imageWidth, imageHeight, 8, bytesPerRow, colorSpace,
-                                                 kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipLast);
+                                                       kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipLast);
     
     CGContextDrawImage(context, CGRectMake(0, 0, imageWidth, imageHeight), image.CGImage);
     
@@ -146,25 +340,6 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     CGColorSpaceRelease(colorSpace);
     
     return resultUIImage;
-}
-
--(void) imageRepresentation {
-    
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size,NO, [UIScreen mainScreen].scale);
-    
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    UIImage *image =UIGraphicsGetImageFromCurrentImageContext();
-    
-    UIGraphicsEndImageContext();
-    
-    image = [self imageBlackToTransparent:image];
-    
-    NSLog(@"width:%f,height:%f",image.size.width,image.size.height);
-    
-    UIImage *img = [self cutImage:image];
-    
-    self.SignatureImg = [self scaleToSize:img];
 }
 
 /**
@@ -213,7 +388,6 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     
     UIImage *lastImage = [self addText:img text:self.showMessage];
     CGImageRelease(imageRef);
-    [self setNeedsDisplay];
     return lastImage;
 }
 
@@ -258,224 +432,6 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     UIImage *aimg =UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return aimg;
-}
-
-/**
- *  @author Kaiser
- *
- *  书写痕迹
- */
-- (void)pan:(UIPanGestureRecognizer *)pan
-{
-    CGPoint currentPoint = [pan locationInView:self];
-    CGPoint midPoint     = midpoint(previousPoint, currentPoint);
-//    NSLog(@"获取到的触摸点的位置为--currentPoint:%@",NSStringFromCGPoint(currentPoint));
-    [self.currentPointArr addObject:[NSValue valueWithCGPoint:currentPoint]];
-    
-    
-    self.hasSignatureImg = YES;
-    CGFloat viewHeight   = self.frame.size.height;
-    CGFloat currentY     = currentPoint.y;
-    
-    
-    if (pan.state ==UIGestureRecognizerStateBegan)
-    {
-        [path moveToPoint:currentPoint];
-        [self.oneSecond setFireDate:[NSDate distantPast]];
-    }
-    else if (pan.state ==UIGestureRecognizerStateChanged)
-        [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
-    
-    
-    if(0 <= currentY && currentY <= viewHeight)
-    {
-        if(max == 0&&min == 0)
-        {
-            max = currentPoint.x;
-            min = currentPoint.x;
-        }
-        else
-        {
-            if(max <= currentPoint.x)
-            {
-                max = currentPoint.x;
-            }
-            if(min>=currentPoint.x)
-            {
-                min = currentPoint.x;
-            }
-        }
-        
-    }
-    
-    previousPoint = currentPoint;
-    
-    [self setNeedsDisplay];
-    isHaveDraw = YES;
-    if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSignatureWriteAction)]) {
-        [self.delegate onSignatureWriteAction];
-    }
-}
-
-- (void)drawRect:(CGRect)rect
-{
-    self.backgroundColor = [UIColor whiteColor];
-    [[UIColor blackColor] setStroke];
-    
-    
-    [path stroke];
-    
-    /*self.layer.cornerRadius =5.0;
-     self.clipsToBounds =YES;
-     self.layer.borderWidth =0.5;
-     self.layer.borderColor = [[UIColor grayColor] CGColor];*/
-    
-    CGContextRef context =UIGraphicsGetCurrentContext();
-    
-    if(!isSure && !isHaveDraw)
-    {//No
-        NSString *str = @"此处手写签名: 正楷, 工整书写";
-        CGContextSetRGBFillColor (context,  199/255.0, 199/255.0,199/255.0, 1.0);//设置填充颜色
-        CGRect rect1  = CGRectMake((rect.size.width -StrWidth)/2, (rect.size.height -StrHeight)/3-5,StrWidth, StrHeight);
-        origionX      = rect1.origin.x;
-        totalWidth    = rect1.origin.x+StrWidth;
-        UIFont  *font = [UIFont systemFontOfSize:15];//设置字体
-        [str drawInRect:rect1 withFont:font];
-    }
-    else
-    {
-        isSure = NO;
-    }
-    
-}
-
-
-- (void)clear
-{
-    if (self.currentPointArr && self.currentPointArr.count > 0) {
-        [self.currentPointArr removeAllObjects];
-    }
-    self.hasSignatureImg = NO;
-    max = 0;
-    min = 0;
-    path = [UIBezierPath bezierPath];
-    [path setLineWidth:2];
-    isHaveDraw = NO;
-    [self setNeedsDisplay];
-    
-}
-
-- (void)sure
-{
-    if (indexFlag == 0 ) {
-        
-        path = [UIBezierPath bezierPath];
-        [path setLineWidth:2];
-        [self setNeedsDisplay];
-    }
-
-    //没有签名发生时
-//    if(min == 0&&max == 0)
-//    {
-//        min = 0;
-//        max = 0;
-//    }
-//    isSure = YES;
-//    [self setNeedsDisplay];
-//    return [self imageRepresentation];
-    
-  
-    NSMutableArray * tempArr  = [self.totalArr objectAtIndex:indexFlag];
-    
-//
-//    self.hasSignatureImg = YES;
-//    CGFloat viewHeight   = self.frame.size.height;
-//    CGFloat currentY     = currentPoint.y;
-    
-    for (int i = 0; i<tempArr.count; i++) {
-        
-        CGPoint currentPoint = [[tempArr objectAtIndex:i] CGPointValue];
-        CGPoint midPoint     = midpoint(previousPoint, currentPoint);
-        
-        if (indexFlag == 0)
-            [path moveToPoint:currentPoint];
-        else
-            [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
-        
-        
-        previousPoint = currentPoint;
-        
-        
-    }
-    
-    
-    CAShapeLayer * _animLayer;
-    
-    _animLayer = [CAShapeLayer layer];
-    _animLayer.path = path.CGPath;
-    _animLayer.lineWidth = 2.f;
-    _animLayer.strokeColor = [UIColor blackColor].CGColor;
-    _animLayer.fillColor = [UIColor clearColor].CGColor;
-    
-    [self.layer addSublayer:_animLayer];
-    
-    _animLayer.strokeStart = 0.f;   // 设置起点为 0
-    _animLayer.strokeEnd = 0.f;     // 设置终点为 0
-    
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
-    animation.delegate = self;
-    animation.duration = 1.f;   // 持续时间
-    animation.fromValue = @(0); // 从 0 开始
-    animation.toValue = @(1);   // 到 1 结束
-    // 保持动画结束时的状态
-    animation.removedOnCompletion = NO;
-    animation.fillMode = kCAFillModeForwards;
-    // 动画缓慢的进入，中间加速，然后减速的到达目的地。
-    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    [_animLayer addAnimation:animation forKey:@""];
-    
-    
-
-    
-    
-//    if(0 <= currentY && currentY <= viewHeight)
-//    {
-//        if(max == 0&&min == 0)
-//        {
-//            max = currentPoint.x;
-//            min = currentPoint.x;
-//        }
-//        else
-//        {
-//            if(max <= currentPoint.x)
-//            {
-//                max = currentPoint.x;
-//            }
-//            if(min>=currentPoint.x)
-//            {
-//                min = currentPoint.x;
-//            }
-//        }
-//        
-//    }
-    
-    
-
-    
-//    [UIView animateWithDuration:1 animations:^{
-//        [self setNeedsDisplay];
-//    } completion:^(BOOL finished) {
-//
-//    }];
-    
-}
-
--(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
-{
-    indexFlag++;
-    if (indexFlag != self.totalArr.count) {
-        [self sure];
-    }
 }
 
 

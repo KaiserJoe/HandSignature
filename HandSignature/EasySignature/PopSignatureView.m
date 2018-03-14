@@ -9,15 +9,6 @@
 #import "PopSignatureView.h"
 #import "EasySignatureView.h"
 
-#define ScreenWidth  [UIScreen mainScreen].bounds.size.width  //  设备的宽度
-#define ScreenHeight [UIScreen mainScreen].bounds.size.height //   设备的高度
-
-#define RGB(__R, __G, __B) [UIColor colorWithRed:(__R) / 255.0f green:(__G) / 255.0f blue:(__B) / 255.0f alpha:1.0]
-
-#define ACTIONSHEET_BACKGROUNDCOLOR             [UIColor colorWithRed:106/255.00f green:106/255.00f blue:106/255.00f alpha:0.8]
-#define WINDOW_COLOR                            [UIColor colorWithRed:0 green:0 blue:0 alpha:0.4]
-
-#define SignatureViewHeight ((ScreenWidth*(350))/(375))
 
 @interface PopSignatureView () <SignatureViewDelegate> {
     UIView* _mainView;
@@ -71,7 +62,7 @@
     headView.textColor       = [UIColor colorWithRed:0.3258 green:0.3258 blue:0.3258 alpha:1.0];
     headView.font            = [UIFont systemFontOfSize:15];
     headView.text            = @"收拾收拾";
-    [self.backGroundView addSubview:headView];
+//    [self.backGroundView addSubview:headView];
     
     UIView *sepView1         = [[UIView alloc] initWithFrame:CGRectMake(0, 45, ScreenWidth, 1)];
     sepView1.backgroundColor = RGB(238, 238, 238);
@@ -86,15 +77,14 @@
     self.OKBtn     = [[UIButton alloc] initWithFrame:CGRectMake(ScreenWidth - 50, 0, 44, 44)];
     self.OKBtn.titleLabel.font = [UIFont systemFontOfSize:15];
     [self.OKBtn setTitle:@"清除" forState:UIControlStateNormal];
-    [self.OKBtn setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [self.OKBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
     [self.OKBtn addTarget:self action:@selector(onClear) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.OKBtn];
 
     self.cancelBtn                 = [[UIButton alloc] initWithFrame:CGRectMake(6, 0, 44, 44)];
     self.cancelBtn.titleLabel.font = [UIFont systemFontOfSize:15];
-    [self.cancelBtn setTitle:@"完成" forState:UIControlStateNormal];
-    [self.cancelBtn setTitle:@"重现" forState:UIControlStateSelected];
-    [self.cancelBtn setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [self.cancelBtn setTitle:@"重现" forState:UIControlStateNormal];
+    [self.cancelBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
     [self.cancelBtn addTarget:self action:@selector(cancelAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.cancelBtn];
 
@@ -116,20 +106,23 @@
 #pragma mark - -- delegate ---
 
 - (void)onSignatureWriteAction {
-    [self.btn3 setTitleColor:RGB(255, 255, 255) forState:UIControlStateNormal];
+    
+    if (!self.btn3.isSelected) {
+        NSArray * tempBtnArr = @[self.OKBtn,self.cancelBtn,self.btn3];
+        for (UIButton * btn in tempBtnArr) {
+            btn.userInteractionEnabled = YES;
+            [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        }
+        
+        self.OKBtn.selected = YES;//黑色完成
+        [self.btn3 setTitleColor:RGB(255, 255, 255) forState:UIControlStateNormal];
+    }
 }
 
-//存or播放
+//播放
 - (void)cancelAction:(UIButton*)sender {
     
-    if (sender.isSelected) {
-        //自动绘制
-    }
-    else
-    {   //保存图片
-        
-        
-    }
+    [signatureView sure:sender];
 }
 
 
@@ -143,7 +136,7 @@
     NSArray * tempBtnArr = @[self.OKBtn,self.cancelBtn,self.btn3];
     for (UIButton * btn in tempBtnArr) {
         btn.userInteractionEnabled = NO;
-        [btn setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+        [btn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
     }
     self.OKBtn.selected = NO;//灰色完成
     [self.btn3 setTitleColor:WINDOW_COLOR forState:UIControlStateNormal];
@@ -152,22 +145,10 @@
 //提交
 - (void)okAction
 {
-     [signatureView sure];
-    
-    if(signatureView.SignatureImg)
-    {
-        NSLog(@"haveImage");
-//        self.hidden = YES;
         [self hide];
         if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSubmitBtn:)]) {
-            [self.delegate onSubmitBtn:signatureView.SignatureImg];
+            [self.delegate onSubmitBtn:[signatureView imageRepresentation]];
         }
-    }
-    else
-    {
-        NSLog(@"NoImage");
-    }
-
 }
 
 #pragma mark - -- Action ---
