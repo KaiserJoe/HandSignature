@@ -100,25 +100,22 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
  */
 - (void)pan:(UIPanGestureRecognizer *)pan
 {
+    if (path.isEmpty)
+        [self.oneSecond setFireDate:[NSDate date]];
+    
     isHaveDraw           = YES;
     CGPoint currentPoint = [pan locationInView:self];
     CGPoint midPoint     = midpoint(previousPoint, currentPoint);
 
-    if (path.isEmpty)
-        [self.oneSecond setFireDate:[NSDate date]];
-    
-    //临时点
-    [self.currentPointArr addObject:[NSValue valueWithCGPoint:currentPoint]];
-    
     CGFloat viewHeight   = self.frame.size.height;
     CGFloat currentY     = currentPoint.y;//触点Y
-    
     
     if (pan.state ==UIGestureRecognizerStateBegan)
         [path moveToPoint:currentPoint];
     else if (pan.state ==UIGestureRecognizerStateChanged)
         [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
     
+    [self.currentPointArr addObject:[NSValue valueWithCGPoint:currentPoint]];
     
     if(0 <= currentY && currentY <= viewHeight)
     {//确定截图大小,判断是否draw
@@ -186,6 +183,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     if (indexFlag == 0 ) {
         sender.userInteractionEnabled = NO;//防止扰乱动画
         sender.tag                    = 111;
+        previousPoint                 = CGPointZero;
         
         [self removeAllSubLeyer];
         [path removeAllPoints];
@@ -196,39 +194,39 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
         [self setNeedsDisplay];
     }
     
-    
-    
-    NSMutableArray * tempArr  = [self.totalArr objectAtIndex:indexFlag];
+    NSMutableArray<NSValue*>* tempArr  = [self.totalArr objectAtIndex:indexFlag];
 
-    [tempArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [tempArr enumerateObjectsUsingBlock:^(NSValue * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
      
         CGPoint currentPoint = [obj CGPointValue];
         CGPoint midPoint     = midpoint(previousPoint, currentPoint);
         
-        if (indexFlag == 0)
+        double currentX = (currentPoint.x - previousPoint.x);
+        double currentY = (currentPoint.y - previousPoint.y);
+        double range    = sqrt(pow(currentX, 2)+pow(currentY, 2));
+        
+        
+        if (indexFlag == 0||range>20)
+        {
             [path moveToPoint:currentPoint];
+        }
         else
             [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
         
         previousPoint = currentPoint;
     }];
     
-    CAShapeLayer * AnimLayer;
-    
-    AnimLayer             = [CAShapeLayer layer];
-    AnimLayer.path        = path.CGPath;
-    AnimLayer.lineWidth   = 2.f;
-    AnimLayer.strokeColor = [UIColor blackColor].CGColor;
-    AnimLayer.fillColor = [UIColor clearColor].CGColor;
-    AnimLayer.strokeStart = 0.f;//设置起点为 0
-    AnimLayer.strokeEnd   = 0.f;//设置终点为 0
-    
+    CAShapeLayer*   AnimLayer = [CAShapeLayer layer];
+    AnimLayer.path            = path.CGPath;
+    AnimLayer.lineWidth       = 2.f;
+    AnimLayer.strokeColor     = [UIColor blackColor].CGColor;
+    AnimLayer.fillColor       = [UIColor clearColor].CGColor;
+
     [self.layer addSublayer:AnimLayer];
-    
     
     CABasicAnimation *animation   = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
     animation.delegate            = self;
-    animation.duration            = 1.f;// 持续时间
+    animation.duration            = 0.8f;// 持续时间
     animation.fromValue           = @(0);// 从 0 开始
     animation.toValue             = @(1);// 到 1 结束
     animation.removedOnCompletion = NO;//保持动画结束时的状态
@@ -242,24 +240,27 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
 -(void)removeAllSubLeyer
 {
     NSArray<CALayer *> *tempArr =[self.layer sublayers];
-    NSArray<CALayer *> *TempArr2 = [tempArr filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:<#^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings)block#>]]
+    NSArray<CALayer *> *tempArr2 = [tempArr filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+        return [evaluatedObject isKindOfClass:[CALayer class]];
+    }]];
     
-    for (CALayer* tempLayer in tempArr) {
-        [tempLayer setHidden:YES];
-    }
+    [tempArr2 enumerateObjectsUsingBlock:^(CALayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [obj removeFromSuperlayer];
+    }];
 }
 
 -(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
 {
     indexFlag++;
+    
     if (indexFlag != self.totalArr.count) {
         [self sure:nil];
     }
     else
     {
-        UIButton * tmpBtn = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
+        UIButton * tmpBtn             = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
         tmpBtn.userInteractionEnabled = YES;
-        indexFlag = 0;
+        indexFlag                     = 0;
     }
 }
 
