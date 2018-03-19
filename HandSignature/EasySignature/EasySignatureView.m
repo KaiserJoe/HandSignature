@@ -183,7 +183,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     if (indexFlag == 0 ) {
         sender.userInteractionEnabled = NO;//防止扰乱动画
         sender.tag                    = 111;
-        previousPoint                 = CGPointZero;
+        previousPoint                 = CGPointMake(1, 1);
         
         [self removeAllSubLeyer];
         [path removeAllPoints];
@@ -201,8 +201,8 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
         CGPoint currentPoint = [obj CGPointValue];
         CGPoint midPoint     = midpoint(previousPoint, currentPoint);
         
-        double currentX = (currentPoint.x - previousPoint.x);
-        double currentY = (currentPoint.y - previousPoint.y);
+        double currentX = (path.currentPoint.x - previousPoint.x);
+        double currentY = (path.currentPoint.y - previousPoint.y);
         double range    = sqrt(pow(currentX, 2)+pow(currentY, 2));
         
         
@@ -229,12 +229,30 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     animation.duration            = 0.8f;// 持续时间
     animation.fromValue           = @(0);// 从 0 开始
     animation.toValue             = @(1);// 到 1 结束
-    animation.removedOnCompletion = NO;//保持动画结束时的状态
-    animation.fillMode            = kCAFillModeForwards;
+//    animation.removedOnCompletion = NO;//保持动画结束时的状态
+//    animation.fillMode            = kCAFillModeForwards;
     animation.timingFunction      = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
     
-    [AnimLayer addAnimation:animation forKey:@""];
+    [AnimLayer addAnimation:animation forKey:@"sss"];
     
+    indexFlag++;
+    
+    if (indexFlag != self.totalArr.count) {
+        
+        //        NSArray<CALayer*>* layerArr = [self.layer sublayers];
+        //        [layerArr enumerateObjectsUsingBlock:^(CALayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        //            [obj removeAllAnimations];
+        //        }];
+        
+        [self sure:nil];
+    }
+    else
+    {
+        UIButton * tmpBtn             = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
+        tmpBtn.userInteractionEnabled = YES;
+        indexFlag                     = 0;
+    }
+
 }
 
 -(void)removeAllSubLeyer
@@ -249,11 +267,17 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     }];
 }
 
--(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+/*-(void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
 {
     indexFlag++;
     
     if (indexFlag != self.totalArr.count) {
+        
+//        NSArray<CALayer*>* layerArr = [self.layer sublayers];
+//        [layerArr enumerateObjectsUsingBlock:^(CALayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//            [obj removeAllAnimations];
+//        }];
+        
         [self sure:nil];
     }
     else
@@ -262,7 +286,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
         tmpBtn.userInteractionEnabled = YES;
         indexFlag                     = 0;
     }
-}
+}*/
 
 #pragma mark - -- MakeImage ---
 
