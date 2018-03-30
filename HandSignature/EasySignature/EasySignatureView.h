@@ -22,12 +22,7 @@
 /**
  手写签字视图
  */
-@interface EasySignatureView : UIView {
-    CGFloat min;
-    CGFloat max;
-    BOOL  isSure;
-}
-
+@interface EasySignatureView : UIView
 
 @property (nonatomic, strong) NSString       *showMessage;//签名完成后的水印文字
 @property (nonatomic, strong) UIImage        *SignatureImg;
