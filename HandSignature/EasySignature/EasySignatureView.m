@@ -8,6 +8,8 @@
 
 #import "EasySignatureView.h"
 #import <QuartzCore/QuartzCore.h>
+#import "SignatureModel.h"
+
 
 #define StrWidth 210
 #define StrHeight 20
@@ -24,7 +26,7 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
     };
 }
 
-typedef NS_ENUM(NSInteger,UISignEvent){
+typedef NS_ENUM(int,UISignEvent){
     UISignEventTouchUp   = 1,
     UISignEventTouchDrag = 2,
     UISignEventTouchDown = 3,
@@ -35,12 +37,14 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     UIBezierPath *path;     //路径
     CGPoint previousPoint;  //中点
     BOOL isHaveDraw;        //是否画线
-    int indexFlag;          //停顿位 标识
-    int trackTime;          //停顿时间
     NSInteger playTime;     //重放 帧数
     NSInteger totalCount;   //速度控制
+    long tempTime;
+    
 }
-@property (nonatomic,strong) NSMutableArray * trackArr;
+@property (nonatomic,strong) NSMutableArray <SignatureModel*> * trackArr;
+@property (nonatomic,strong) CADisplayLink  * disPlay;
+@property (nonatomic,strong) CAShapeLayer   * disPlayLayer;
 
 @end
 
@@ -52,6 +56,19 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     {
         self.trackArr = [NSMutableArray arrayWithCapacity:0];
 
+        self.disPlay        = [CADisplayLink displayLinkWithTarget:self selector:@selector(secondAdd)];
+        self.disPlay.paused = YES;
+        [self.disPlay addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+
+        self.disPlayLayer             = [CAShapeLayer new];
+        self.disPlayLayer.frame       = self.bounds;
+        self.disPlayLayer.lineCap     = kCALineCapButt;
+        self.disPlayLayer.fillColor   = nil;
+        self.disPlayLayer.strokeColor = [UIColor blackColor].CGColor;
+        self.disPlayLayer.lineWidth   = 2;
+        [self.layer addSublayer:self.disPlayLayer];
+        
+        
         path = [UIBezierPath bezierPath];
         [path setLineWidth:2];
         // Capture touches
@@ -65,17 +82,12 @@ typedef NS_ENUM(NSInteger,UISignEvent){
 }
 
 - (void)commonInit {
-    
-    isHaveDraw    = NO;
-    indexFlag     = 0;
-    trackTime     = 0;
-    totalCount    = 0;
-    playTime      = 0;
-    
+    isHaveDraw = NO;
+    totalCount = 0;
+    playTime   = 0;
+    tempTime   = 0;
     previousPoint = CGPointMake(0, 0);
-    
     [self.layer removeAllAnimations];//清空动画
-
 }
 
 /**
@@ -89,57 +101,53 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     CGPoint currentPoint = [pan locationInView:self];
     CGPoint midPoint     = midpoint(previousPoint, currentPoint);
     
-    //    CGFloat viewHeight   = self.frame.size.height;
-    //    CGFloat currentY     = currentPoint.y;//触点Y
     
     if (pan.state ==UIGestureRecognizerStateBegan)
     {
         [path moveToPoint:currentPoint];
-        if (trackTime!=0) {
-            [self.trackSecond setFireDate:[NSDate distantFuture]];
-            trackTime = 0;
-        }
+        
+        NSTimeInterval timeInterval = [[NSDate date]timeIntervalSince1970] * 1000;
+        [self touchRecordWithPointX:currentPoint.x PointY:currentPoint.y TouchFlag:UISignEventTouchDown systemTime:timeInterval];
     }
     else if (pan.state ==UIGestureRecognizerStateChanged)
+    {
         [path addQuadCurveToPoint:midPoint controlPoint:previousPoint];
+        
+        [self touchRecordWithPointX:currentPoint.x PointY:currentPoint.y TouchFlag:UISignEventTouchDrag systemTime:0];
+    }
     else if (pan.state == UIGestureRecognizerStateEnded)
-        [self.trackSecond setFireDate:[NSDate date]];
-    
-    
-    
-    
-    
-    /*if(0 <= currentY && currentY <= viewHeight)
-     {//确定截图大小,判断是否draw
-     if(max == 0&&min == 0)
-     {
-     max = currentPoint.x;
-     min = currentPoint.x;
-     }
-     else
-     {
-     if(max <= currentPoint.x)
-     {
-     max = currentPoint.x;
-     }
-     if(min>=currentPoint.x)
-     {
-     min = currentPoint.x;
-     }
-     }
-     
-     }*/
+    {
+        NSTimeInterval timeInterval = [[NSDate date]timeIntervalSince1970] * 1000;
+        [self touchRecordWithPointX:currentPoint.x PointY:currentPoint.y TouchFlag:UISignEventTouchUp systemTime:timeInterval];
+    }
     
     previousPoint = currentPoint;
     
     [self setNeedsDisplay];
     
-    [self.totalArr addObject:(__bridge UIImage*)[[self cutImage] CGImage]];
     
     
     if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSignatureWriteAction)]) {
         [self.delegate onSignatureWriteAction];
     }
+}
+
+/**
+ *  @author Kaiser
+ *
+ *  记录点的位置,状态
+ */
+-(void)touchRecordWithPointX:(float)pointX PointY:(float)pointY TouchFlag:(int)status systemTime:(long)time
+{
+    NSDictionary * tempDic      = [NSDictionary dictionaryWithObjectsAndKeys:
+                                   [NSNumber numberWithFloat:pointX],@"pointX",
+                                   [NSNumber numberWithFloat:pointY],@"pointY",
+                                   [NSNumber numberWithInt:status],@"pointFlag",
+                                   [NSNumber numberWithLong:time],@"systemTime",nil];
+    
+    SignatureModel * signModel  = [[SignatureModel alloc]initWithDictionary:tempDic];
+    
+    [self.trackArr addObject:signModel];
 }
 
 - (void)drawRect:(CGRect)rect
@@ -155,12 +163,9 @@ typedef NS_ENUM(NSInteger,UISignEvent){
 }
 
 
+
 - (void)clear
 {
-    //暂停定时
-    self.disPlay.paused = YES;
-    [self.trackSecond setFireDate:[NSDate distantFuture]];
-    [self.totalArr removeAllObjects];   //清空帧图
     [self.trackArr removeAllObjects];   //清空等待
     [self commonInit];
     
@@ -171,55 +176,86 @@ typedef NS_ENUM(NSInteger,UISignEvent){
 }
 
 
-
-- (void)sure:(UIButton*)sender{
-    
-    sender.userInteractionEnabled = NO;//重写 .防止扰乱动画
-    self.userInteractionEnabled   = NO;
-    sender.tag                    = 111;
-    
-    [self.trackSecond setFireDate:[NSDate distantFuture]];
-    
-    self.disPlay.paused = NO;
-}
-
 -(void)secondAdd{
-    
+
     totalCount ++;
     if (totalCount%2 ==0) {
         
-        if (playTime < [self.trackArr.lastObject integerValue] ){
+        if (playTime < self.trackArr.count ){
             
-            if (indexFlag<= self.trackArr.count)  {//数组还有比对的意义
-                
-                if (playTime == [[self.trackArr objectAtIndex:indexFlag]integerValue]) {
-                    
-                    indexFlag ++;
-                    self.disPlay.paused = YES;
-                    
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        self.disPlay.paused = NO;
-                    });
-                    
-                    return;
+            
+            SignatureModel * obj = [self.trackArr objectAtIndex:playTime];
+            
+            switch ([obj.pointFlag intValue]) {
+                case UISignEventTouchUp:
+                {
+                    tempTime = [obj.systemTime longValue];
                 }
+                    break;
+                case UISignEventTouchDrag:
+                {
+                    //                    [path addQuadCurveToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]) controlPoint:previousPoint];
+                    
+                    [path addLineToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue])];
+                    
+                }
+                    break;
+                case UISignEventTouchDown:
+                {
+                    if (tempTime!=0){
+                        //如果存在间隙
+                        long currentTime    = [obj.systemTime longValue];
+                        long timeGap        = (currentTime - tempTime);
+                        self.disPlay.paused = YES;
+
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeGap * USEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                            self.disPlay.paused = NO;
+                        });
+                        [path moveToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue])];
+                        
+                    }else {
+                        //如果不存在间隙
+                        [path moveToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue])];
+                    }
+                }
+                    break;
             }
-            playTime ++;
-        }
-        
-        if (playTime == self.totalArr.count ) {
-            self.disPlay.paused           = YES;
-            UIButton * tmpBtn             = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
-            tmpBtn.userInteractionEnabled = YES;
             
-            [self commonInit];
-            return;
+            //            previousPoint = CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]);
+            //            [path stroke];
+//            [self setNeedsDisplay];
         }
-        
-        self.layer.contents = [self.totalArr objectAtIndex:playTime];
+        playTime ++;
     }
+    
+    if (playTime == self.trackArr.count ) {
+        self.disPlay.paused           = YES;
+        UIButton * tmpBtn             = [[UIApplication sharedApplication].keyWindow viewWithTag:111];
+        tmpBtn.userInteractionEnabled = YES;
+        
+        [self commonInit];
+        return;
+    }
+    
+    self.disPlayLayer.path = path.CGPath;
 }
 
+/**
+ *  @author Kaiser
+ *
+ *  重现的方法
+ */
+- (void)sure:(UIButton*)sender{
+    
+    sender.userInteractionEnabled = NO;//重写禁止 .防止扰乱动画
+    self.userInteractionEnabled   = NO;//画布静止
+    sender.tag                    = 111;
+    
+    [path removeAllPoints];
+    [self setNeedsDisplay];
+
+    self.disPlay.paused = NO;
+}
 
 #pragma mark - -- MakeImage ---
 
@@ -234,6 +270,8 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     
     UIGraphicsEndImageContext();
     
+    [path removeAllPoints];
+    [self setNeedsDisplay];
     //        image = [self imageBlackToTransparent:image];
     
     //    NSLog(@"width:%f,height:%f",image.size.width,image.size.height);
@@ -244,6 +282,10 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     
     return image;
 }
+
+
+
+#pragma mark - -- 没有使用的方法 ---
 
 //只截取签名部分图片
 - (UIImage *)cutImage
@@ -258,9 +300,6 @@ typedef NS_ENUM(NSInteger,UISignEvent){
     UIGraphicsEndImageContext();
     return image;
 }
-
-#pragma mark - -- 没有使用的方法 ---
-
 
 -(void)pauseLayer:(CALayer*)layer {
     CFTimeInterval pausedTime = [layer convertTime:CACurrentMediaTime() fromLayer:nil];

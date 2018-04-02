@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 
 @interface SignatureModel : NSObject
-@property (nonatomic) NSNumber * pointX;
-@property (nonatomic) NSNumber * pointY;
-@property (nonatomic) NSNumber * pointFlag;
-@property (nonatomic) NSNumber * systemTime;
+@property (nonatomic     ) NSNumber       * pointX;
+@property (nonatomic     ) NSNumber       * pointY;
+@property (nonatomic     ) NSNumber       * pointFlag;
+@property (nonatomic     ) NSNumber * systemTime;
 
 
 -(instancetype)initWithDictionary:(NSDictionary*)dic;
