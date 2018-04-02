@@ -2,7 +2,7 @@
 //  AppDelegate.h
 //  EsayHandwritingSignature
 //
-//  Created by Liangk on 2017/11/9.
+//  Created by Kaiser on 2017/11/9.
 //  Copyright © 2017年 liang. All rights reserved.
 //
 
