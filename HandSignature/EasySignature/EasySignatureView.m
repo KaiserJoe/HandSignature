@@ -82,12 +82,10 @@ typedef NS_ENUM(int,UISignEvent){
 }
 
 - (void)commonInit {
-    isHaveDraw = NO;
-    totalCount = 0;
-    playTime   = 0;
-    tempTime   = 0;
+    totalCount    = 0;
+    playTime      = 0;
+    tempTime      = 0;
     previousPoint = CGPointMake(0, 0);
-    [self.layer removeAllAnimations];//清空动画
 }
 
 /**
@@ -122,9 +120,7 @@ typedef NS_ENUM(int,UISignEvent){
     }
     
     previousPoint = currentPoint;
-    
     [self setNeedsDisplay];
-    
     
     
     if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSignatureWriteAction)]) {
@@ -168,11 +164,13 @@ typedef NS_ENUM(int,UISignEvent){
 {
     [self.trackArr removeAllObjects];   //清空等待
     [self commonInit];
-    
+
     [path removeAllPoints];    //清空路径
     [self setNeedsDisplay];
-    
+
+    self.disPlayLayer.path      = path.CGPath;
     self.userInteractionEnabled = YES;
+    isHaveDraw                  = NO;
 }
 
 
@@ -182,7 +180,6 @@ typedef NS_ENUM(int,UISignEvent){
     if (totalCount%2 ==0) {
         
         if (playTime < self.trackArr.count ){
-            
             
             SignatureModel * obj = [self.trackArr objectAtIndex:playTime];
             
@@ -194,9 +191,7 @@ typedef NS_ENUM(int,UISignEvent){
                     break;
                 case UISignEventTouchDrag:
                 {
-                    //                    [path addQuadCurveToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]) controlPoint:previousPoint];
-                    
-                    [path addLineToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue])];
+                    [path addQuadCurveToPoint:CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]) controlPoint:previousPoint];
                     
                 }
                     break;
@@ -220,10 +215,7 @@ typedef NS_ENUM(int,UISignEvent){
                 }
                     break;
             }
-            
-            //            previousPoint = CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]);
-            //            [path stroke];
-//            [self setNeedsDisplay];
+            previousPoint = CGPointMake([obj.pointX floatValue], [obj.pointY floatValue]);
         }
         playTime ++;
     }
@@ -269,9 +261,7 @@ typedef NS_ENUM(int,UISignEvent){
     UIImage *image =UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
-    
-    [path removeAllPoints];
-    [self setNeedsDisplay];
+
     //        image = [self imageBlackToTransparent:image];
     
     //    NSLog(@"width:%f,height:%f",image.size.width,image.size.height);

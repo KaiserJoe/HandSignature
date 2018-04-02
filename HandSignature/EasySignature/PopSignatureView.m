@@ -145,7 +145,7 @@
 //提交
 - (void)okAction
 {
-//        [self hide];
+        [self hide];
         if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSubmitBtn:)]) {
             [self.delegate onSubmitBtn:[signatureView imageRepresentation]];
         }
