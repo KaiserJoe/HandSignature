@@ -54,12 +54,15 @@ typedef NS_ENUM(int,UISignEvent){
 {
     if (self = [super initWithFrame:frame])
     {
-        self.trackArr = [NSMutableArray arrayWithCapacity:0];
+        //记录点数组
+        self.trackArr       = [NSMutableArray arrayWithCapacity:0];
 
+        //屏幕刷新
         self.disPlay        = [CADisplayLink displayLinkWithTarget:self selector:@selector(secondAdd)];
         self.disPlay.paused = YES;
         [self.disPlay addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 
+        //播放Layer
         self.disPlayLayer             = [CAShapeLayer new];
         self.disPlayLayer.frame       = self.bounds;
         self.disPlayLayer.lineCap     = kCALineCapButt;
@@ -68,10 +71,12 @@ typedef NS_ENUM(int,UISignEvent){
         self.disPlayLayer.lineWidth   = 2;
         [self.layer addSublayer:self.disPlayLayer];
         
-        
+
+        //路径
         path = [UIBezierPath bezierPath];
         [path setLineWidth:2];
-        // Capture touches
+        
+        //画笔
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
         pan.maximumNumberOfTouches = pan.minimumNumberOfTouches =1;
         [self addGestureRecognizer:pan];
@@ -81,6 +86,11 @@ typedef NS_ENUM(int,UISignEvent){
     return self;
 }
 
+/**
+ *  @author Kaiser
+ *
+ *  初始化数据
+ */
 - (void)commonInit {
     totalCount    = 0;
     playTime      = 0;

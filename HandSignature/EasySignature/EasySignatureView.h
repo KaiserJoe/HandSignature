@@ -24,16 +24,13 @@
  */
 @interface EasySignatureView : UIView
 
-@property (nonatomic, strong) NSString       *showMessage;//签名完成后的水印文字
-@property (nonatomic, strong) UIImage        *SignatureImg;
-@property (nonatomic, strong) NSMutableArray *currentPointArr;
+@property (nonatomic, strong) NSString              * showMessage;//签名完成后的水印文字
 @property (nonatomic, assign) id<SignatureViewDelegate> delegate;
 
 /**
  清除
  */
 - (void)clear;
-
 
 /**
  确定
