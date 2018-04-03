@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "SignatureModel.h"
 
 //代理
 @protocol SignatureViewDelegate <NSObject>
@@ -25,8 +26,8 @@
 @interface EasySignatureView : UIView
 
 @property (nonatomic, strong) NSString              * showMessage;//签名完成后的水印文字
-@property (nonatomic, assign) id<SignatureViewDelegate> delegate;
-
+@property (nonatomic, assign) id<             SignatureViewDelegate> delegate;
+@property (nonatomic,strong ) NSMutableArray <SignatureModel*> * trackArr;
 /**
  清除
  */
@@ -38,5 +39,5 @@
 - (void)sure:(UIButton *)sender;
 
 
--(UIImage *) imageRepresentation;
+-(NSArray *) imageRepresentation;
 @end

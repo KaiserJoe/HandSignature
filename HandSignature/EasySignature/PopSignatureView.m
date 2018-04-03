@@ -8,7 +8,8 @@
 
 #import "PopSignatureView.h"
 #import "EasySignatureView.h"
-
+#import "NetWorkBlock.h"
+#import "MJExtension.h"
 
 @interface PopSignatureView () <SignatureViewDelegate> {
     UIView* _mainView;
@@ -56,13 +57,14 @@
     self.backGroundView.userInteractionEnabled = YES;
     [_maskView addSubview:self.backGroundView];
     
-    UILabel *headView        = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, ScreenWidth, 44)];
-    headView.backgroundColor = [UIColor whiteColor];
-    headView.textAlignment   = NSTextAlignmentCenter;
-    headView.textColor       = [UIColor colorWithRed:0.3258 green:0.3258 blue:0.3258 alpha:1.0];
-    headView.font            = [UIFont systemFontOfSize:15];
-    headView.text            = @"收拾收拾";
-//    [self.backGroundView addSubview:headView];
+    //标题
+    UIButton * centerBtn      = [[UIButton alloc] initWithFrame:CGRectMake((ScreenWidth/2)-50, 0, 100, 44)];
+    centerBtn.titleLabel.font = [UIFont systemFontOfSize:12];
+    [centerBtn setTitle:@"DownloadCloud" forState:UIControlStateNormal];
+    [centerBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
+    [centerBtn addTarget:self action:@selector(signatureGetData) forControlEvents:UIControlEventTouchUpInside];
+    [self.backGroundView addSubview:centerBtn];
+    
     
     UIView *sepView1         = [[UIView alloc] initWithFrame:CGRectMake(0, 45, ScreenWidth, 1)];
     sepView1.backgroundColor = RGB(238, 238, 238);
@@ -76,14 +78,14 @@
     
     self.OKBtn     = [[UIButton alloc] initWithFrame:CGRectMake(ScreenWidth - 50, 0, 44, 44)];
     self.OKBtn.titleLabel.font = [UIFont systemFontOfSize:15];
-    [self.OKBtn setTitle:@"清除" forState:UIControlStateNormal];
+    [self.OKBtn setTitle:@"Clean" forState:UIControlStateNormal];
     [self.OKBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
     [self.OKBtn addTarget:self action:@selector(onClear) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.OKBtn];
 
-    self.cancelBtn                 = [[UIButton alloc] initWithFrame:CGRectMake(6, 0, 44, 44)];
+    self.cancelBtn                 = [[UIButton alloc] initWithFrame:CGRectMake(6, 0, 55, 44)];
     self.cancelBtn.titleLabel.font = [UIFont systemFontOfSize:15];
-    [self.cancelBtn setTitle:@"重现" forState:UIControlStateNormal];
+    [self.cancelBtn setTitle:@"Replay" forState:UIControlStateNormal];
     [self.cancelBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
     [self.cancelBtn addTarget:self action:@selector(cancelAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.cancelBtn];
@@ -92,7 +94,7 @@
     self.btn3                 = [[UIButton alloc] initWithFrame:CGRectMake(0, SignatureViewHeight-44, ScreenWidth, 44)];
     self.btn3.titleLabel.font = [UIFont systemFontOfSize:15];
     self.btn3.backgroundColor = [UIColor colorWithRed:0.1529 green:0.7765 blue:0.7765 alpha:1.0];
-    [self.btn3 setTitle:@"提交" forState:UIControlStateNormal];
+    [self.btn3 setTitle:@"Submit" forState:UIControlStateNormal];
     [self.btn3 setTitleColor:WINDOW_COLOR forState:UIControlStateNormal];
     [self.btn3 addTarget:self action:@selector(okAction) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.btn3];
@@ -121,7 +123,6 @@
 
 //播放
 - (void)cancelAction:(UIButton*)sender {
-    
     [signatureView sure:sender];
 }
 
@@ -147,7 +148,10 @@
 {
     [self hide];
     if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSubmitBtn:)]) {
-        [self.delegate onSubmitBtn:[signatureView imageRepresentation]];
+        
+        NSArray * arr = [signatureView imageRepresentation];
+        [self.delegate onSubmitBtn:[arr objectAtIndex:1]];
+        [self signatureUpdate:arr.firstObject];
     }
 }
 
@@ -168,5 +172,56 @@
         [self removeFromSuperview];
     }];
 }
+
+
+#pragma mark - -- 网络 ---
+ 
+-(void)signatureUpdate:(NSArray*)updatesStr
+{
+    
+    NSMutableArray * tempArr = [NSMutableArray arrayWithCapacity:0];
+    [updatesStr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [tempArr addObject:[obj mj_keyValues]];
+    }];
+    
+    NSString * tempStr = [[tempArr mj_JSONData] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    
+    [[[NetWorkBlock alloc]init]requestNetWithUrl:@"http://10.7.7.100:8001/write/submit"
+                                    andInterface:nil
+                       andBodyOfRequestForKeyArr:@[@"keys"]
+                                     andValueArr:@[tempStr]
+                                        andBlock:^(id result) {
+                                            
+                                        } andGet:NO];
+
+}
+
+-(void)signatureGetData
+{
+    [[[NetWorkBlock alloc]init]requestNetWithUrl:@"http://10.7.7.100:8001/write/get"
+                                    andInterface:nil
+                       andBodyOfRequestForKeyArr:nil
+                                     andValueArr:nil
+                                        andBlock:^(id result) {
+                                            NSString * newStr = [result substringFromIndex:[result rangeOfString:@"keys="].length];
+                                            NSArray * arr     = [[[NSData alloc]initWithBase64EncodedString:newStr
+                                                                                                    options:NSDataBase64DecodingIgnoreUnknownCharacters]mj_JSONObject];
+                                           
+                                            NSMutableArray * tempArr = [NSMutableArray arrayWithCapacity:0];
+                                            [arr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                                               [tempArr addObject:[SignatureModel mj_objectWithKeyValues:obj]];
+                                            }];
+                                            
+                                            if (signatureView.trackArr !=nil) {
+                                                [signatureView.trackArr removeAllObjects];
+                                            }
+                                            signatureView.trackArr  = tempArr;
+                                            
+                                            [self onSignatureWriteAction];
+                                            [signatureView sure:self.cancelBtn];
+                                            
+                                        } andGet:YES];
+}
+
 
 @end

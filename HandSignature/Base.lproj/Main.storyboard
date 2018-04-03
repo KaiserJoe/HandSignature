@@ -22,18 +22,21 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8RO-zq-Ah6">
-                                <rect key="frame" x="15" y="70" width="345" height="30"/>
-                                <color key="backgroundColor" red="1" green="0.8703962053571429" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <rect key="frame" x="15" y="50" width="345" height="30"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="kj3-xX-50N"/>
                                 </constraints>
-                                <state key="normal" title="显示"/>
+                                <state key="normal" title="Show Signnature">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
                                 <connections>
                                     <action selector="showPopSignatureView:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8yO-lA-cmv"/>
                                 </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SC1-FK-O09">
-                                <rect key="frame" x="0.0" y="130" width="375" height="262"/>
+                                <rect key="frame" x="0.0" y="110" width="375" height="262"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="262" id="bfz-rz-N3I"/>
                                 </constraints>
@@ -51,11 +54,11 @@
                             <constraint firstAttribute="trailing" secondItem="SC1-FK-O09" secondAttribute="trailing" id="R6r-ha-b9y"/>
                             <constraint firstAttribute="trailing" secondItem="8RO-zq-Ah6" secondAttribute="trailing" constant="15" id="XLo-eh-N0C"/>
                             <constraint firstItem="8RO-zq-Ah6" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="rMp-ox-uDX"/>
-                            <constraint firstItem="8RO-zq-Ah6" firstAttribute="top" secondItem="g8u-3r-zYv" secondAttribute="bottom" constant="50" id="xbE-bN-emJ"/>
+                            <constraint firstItem="8RO-zq-Ah6" firstAttribute="top" secondItem="g8u-3r-zYv" secondAttribute="bottom" constant="30" id="xbE-bN-emJ"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="showImageView" destination="SC1-FK-O09" id="Rob-w8-VD7"/>
+                        <outlet property="showImageView" destination="SC1-FK-O09" id="Ovn-38-GVn"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

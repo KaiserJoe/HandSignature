@@ -8,7 +8,6 @@
 
 #import "EasySignatureView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "SignatureModel.h"
 
 
 #define StrWidth 210
@@ -27,9 +26,9 @@ static CGPoint midpoint(CGPoint p0,CGPoint p1) {
 }
 
 typedef NS_ENUM(int,UISignEvent){
-    UISignEventTouchUp   = 1,
+    UISignEventTouchDown = 1,
     UISignEventTouchDrag = 2,
-    UISignEventTouchDown = 3,
+    UISignEventTouchUp   = 3,
 };
 
 @interface EasySignatureView ()<CAAnimationDelegate>
@@ -42,7 +41,6 @@ typedef NS_ENUM(int,UISignEvent){
     long tempTime;
     
 }
-@property (nonatomic,strong) NSMutableArray <SignatureModel*> * trackArr;
 @property (nonatomic,strong) CADisplayLink  * disPlay;
 @property (nonatomic,strong) CAShapeLayer   * disPlayLayer;
 
@@ -50,7 +48,7 @@ typedef NS_ENUM(int,UISignEvent){
 
 @implementation EasySignatureView
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
@@ -253,6 +251,7 @@ typedef NS_ENUM(int,UISignEvent){
     sender.userInteractionEnabled = NO;//重写禁止 .防止扰乱动画
     self.userInteractionEnabled   = NO;//画布静止
     sender.tag                    = 111;
+    isHaveDraw                    = YES;
     
     [path removeAllPoints];
     [self setNeedsDisplay];
@@ -263,7 +262,7 @@ typedef NS_ENUM(int,UISignEvent){
 #pragma mark - -- MakeImage ---
 
 
--(UIImage *) imageRepresentation {
+-(NSArray *) imageRepresentation {
     
     UIGraphicsBeginImageContextWithOptions(self.bounds.size,NO, [UIScreen mainScreen].scale);
     
@@ -281,7 +280,7 @@ typedef NS_ENUM(int,UISignEvent){
     
     //    self.SignatureImg = image;//[self scaleToSize:img];
     
-    return image;
+    return [NSArray arrayWithObjects:self.trackArr,image, nil];
 }
 
 

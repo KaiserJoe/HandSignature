@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "PopSignatureView.h"
+#import "EasySignatureView.h"
 
 #define ScreenWidth  [UIScreen mainScreen].bounds.size.width  //  设备的宽度
 #define ScreenHeight [UIScreen mainScreen].bounds.size.height //   设备的高度
@@ -35,6 +36,7 @@
 #pragma mark - SocialSignatureViewDelegate
 
 - (void)onSubmitBtn:(UIImage *)signatureImg {
+//    self.showImageView.layer.contents = (__bridge id _Nullable)(signatureImg.CGImage);
     self.showImageView.image = signatureImg;
 }
 

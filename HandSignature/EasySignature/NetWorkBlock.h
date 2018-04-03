@@ -11,5 +11,6 @@
 
 @interface NetWorkBlock : NSObject
 
--(void)requestNetWithUrl:(NSString *)urlStr andInterface:(NSString*)interface andBodyOfRequestForKeyArr:(NSArray*)keyArr andValueArr:(NSArray*)valueArr andBlock:(void(^)(NSDictionary * result))block andType:(BOOL)isGet;
+-(void)requestNetWithUrl:(NSString *)urlStr andInterface:(NSString*)interface andBodyOfRequestForKeyArr:(NSArray*)keyArr andValueArr:(NSArray*)valueArr
+                andBlock:(void(^)(id result))block andGet:(BOOL)isGet;
 @end

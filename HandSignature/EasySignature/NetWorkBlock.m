@@ -13,17 +13,20 @@
 			 andInterface:(NSString*)interface
 andBodyOfRequestForKeyArr:(NSArray*)keyArr
 			  andValueArr:(NSArray*)valueArr
-				 andBlock:(void (^)(NSDictionary *))block
-				  andType:(BOOL)isGet
+				 andBlock:(void (^)(id))block
+				  andGet:(BOOL)isGet
 {
-	
-    NSMutableString *reqStr    = [NSMutableString stringWithCapacity:0];
+	//get请求参数
+    NSMutableString *reqStr    = [NSMutableString stringWithCapacity:0];\
+    //Post请求Body
     NSMutableString *objectStr = [NSMutableString stringWithCapacity:0];
     
     if(isGet && interface !=nil)
         [reqStr appendFormat:@"%@%@?",urlStr,interface];
-    else
+    else if(!isGet && interface != nil)
         [reqStr appendFormat:@"%@%@",urlStr,interface];
+    else
+        [reqStr appendFormat:@"%@",urlStr];
 		
 	
 	if (!isGet)
@@ -70,8 +73,9 @@ andBodyOfRequestForKeyArr:(NSArray*)keyArr
 			 }
 			 else
 			 {
-				 NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:data options :NSJSONReadingMutableContainers error:nil];
-				 block(dic);
+//                 id dic = [NSJSONSerialization JSONObjectWithData:data options :NSJSONReadingMutableContainers error:nil];
+                 
+				 block([[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding]);
 			 }
 		 });
 
@@ -84,6 +88,7 @@ andBodyOfRequestForKeyArr:(NSArray*)keyArr
 
 - (NSString *)encodeToPercentEscapeString: (NSString *)input
 {
+    return input;
 
     CFStringRef aCFString =(CFStringRef)
     CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
