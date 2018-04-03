@@ -54,8 +54,9 @@ typedef NS_ENUM(int,UISignEvent){
 {
     if (self = [super initWithFrame:frame])
     {
+        self.clipsToBounds = YES;
         //记录点数组
-        self.trackArr       = [NSMutableArray arrayWithCapacity:0];
+        self.trackArr      = [NSMutableArray arrayWithCapacity:0];
 
         //屏幕刷新
         self.disPlay        = [CADisplayLink displayLinkWithTarget:self selector:@selector(secondAdd)];
@@ -187,7 +188,7 @@ typedef NS_ENUM(int,UISignEvent){
 -(void)secondAdd{
 
     totalCount ++;
-    if (totalCount%2 ==0) {
+    if (totalCount%1 ==0) {
         
         if (playTime < self.trackArr.count ){
             

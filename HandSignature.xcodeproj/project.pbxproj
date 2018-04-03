@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9FAF110A206CC1DC00D2DE3F /* SignatureModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAF1109206CC1DC00D2DE3F /* SignatureModel.m */; };
+		9FCA4BC820731EFC00933F33 /* NetWorkBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FCA4BC720731EFC00933F33 /* NetWorkBlock.m */; };
 		F8294CFF1FB3E9300011D601 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F8294CFE1FB3E9300011D601 /* AppDelegate.m */; };
 		F8294D021FB3E9300011D601 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8294D011FB3E9300011D601 /* ViewController.m */; };
 		F8294D051FB3E9300011D601 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F8294D031FB3E9300011D601 /* Main.storyboard */; };
@@ -22,6 +23,8 @@
 		9F9BCE4B2058F43F00B7193A /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		9FAF1108206CC1DC00D2DE3F /* SignatureModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SignatureModel.h; sourceTree = "<group>"; };
 		9FAF1109206CC1DC00D2DE3F /* SignatureModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SignatureModel.m; sourceTree = "<group>"; };
+		9FCA4BC620731EFC00933F33 /* NetWorkBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetWorkBlock.h; sourceTree = "<group>"; };
+		9FCA4BC720731EFC00933F33 /* NetWorkBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetWorkBlock.m; sourceTree = "<group>"; };
 		F8294CFA1FB3E9300011D601 /* HandSignature.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandSignature.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8294CFD1FB3E9300011D601 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F8294CFE1FB3E9300011D601 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -86,6 +89,8 @@
 		F8294D131FB3E9D60011D601 /* EasySignature */ = {
 			isa = PBXGroup;
 			children = (
+				9FCA4BC620731EFC00933F33 /* NetWorkBlock.h */,
+				9FCA4BC720731EFC00933F33 /* NetWorkBlock.m */,
 				F8294D171FB3ED4D0011D601 /* PopSignatureView.h */,
 				F8294D181FB3ED4D0011D601 /* PopSignatureView.m */,
 				F8294D141FB3EA700011D601 /* EasySignatureView.h */,
@@ -170,6 +175,7 @@
 				F8294D021FB3E9300011D601 /* ViewController.m in Sources */,
 				F8294D161FB3EA700011D601 /* EasySignatureView.m in Sources */,
 				9FAF110A206CC1DC00D2DE3F /* SignatureModel.m in Sources */,
+				9FCA4BC820731EFC00933F33 /* NetWorkBlock.m in Sources */,
 				F8294D0D1FB3E9300011D601 /* main.m in Sources */,
 				F8294CFF1FB3E9300011D601 /* AppDelegate.m in Sources */,
 				F8294D191FB3ED4E0011D601 /* PopSignatureView.m in Sources */,

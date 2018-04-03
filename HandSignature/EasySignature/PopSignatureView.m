@@ -145,10 +145,10 @@
 //提交
 - (void)okAction
 {
-        [self hide];
-        if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSubmitBtn:)]) {
-            [self.delegate onSubmitBtn:[signatureView imageRepresentation]];
-        }
+    [self hide];
+    if (self.delegate != nil &&[self.delegate respondsToSelector:@selector(onSubmitBtn:)]) {
+        [self.delegate onSubmitBtn:[signatureView imageRepresentation]];
+    }
 }
 
 #pragma mark - -- Action ---
