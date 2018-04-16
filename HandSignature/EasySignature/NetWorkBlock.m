@@ -88,8 +88,6 @@ andBodyOfRequestForKeyArr:(NSArray*)keyArr
 
 - (NSString *)encodeToPercentEscapeString: (NSString *)input
 {
-    return input;
-
     CFStringRef aCFString =(CFStringRef)
     CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
                                             (CFStringRef)input,

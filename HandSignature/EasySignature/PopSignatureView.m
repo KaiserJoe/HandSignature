@@ -61,7 +61,7 @@
     UIButton * centerBtn      = [[UIButton alloc] initWithFrame:CGRectMake((ScreenWidth/2)-50, 0, 100, 44)];
     centerBtn.titleLabel.font = [UIFont systemFontOfSize:12];
     [centerBtn setTitle:@"DownloadCloud" forState:UIControlStateNormal];
-    [centerBtn setTitleColor:ACTIONSHEET_BACKGROUNDCOLOR forState:UIControlStateNormal];
+    [centerBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [centerBtn addTarget:self action:@selector(signatureGetData) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:centerBtn];
     
@@ -99,6 +99,7 @@
     [self.btn3 addTarget:self action:@selector(okAction) forControlEvents:UIControlEventTouchUpInside];
     [self.backGroundView addSubview:self.btn3];
 
+    [self onClear];
     
     [UIView animateWithDuration:0.5 animations:^{
         [self.backGroundView setFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height-SignatureViewHeight, [UIScreen mainScreen].bounds.size.width, SignatureViewHeight)];
@@ -184,14 +185,18 @@
         [tempArr addObject:[obj mj_keyValues]];
     }];
     
-    NSString * tempStr = [[tempArr mj_JSONData] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    NSString * tempStr =   [[NSJSONSerialization dataWithJSONObject:tempArr
+                                                           options:NSJSONWritingPrettyPrinted error:nil]
+                           base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    
+//    NSString * tempStr = [[tempArr mj_JSONData] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
     
     [[[NetWorkBlock alloc]init]requestNetWithUrl:@"http://10.7.7.100:8001/write/submit"
                                     andInterface:nil
                        andBodyOfRequestForKeyArr:@[@"keys"]
                                      andValueArr:@[tempStr]
                                         andBlock:^(id result) {
-                                            
+                                            NSLog(@"cg");
                                         } andGet:NO];
 
 }
@@ -203,18 +208,27 @@
                        andBodyOfRequestForKeyArr:nil
                                      andValueArr:nil
                                         andBlock:^(id result) {
+
+                                            NSError *err;
                                             NSString * newStr = [result substringFromIndex:[result rangeOfString:@"keys="].length];
-                                            NSArray * arr     = [[[NSData alloc]initWithBase64EncodedString:newStr
-                                                                                                    options:NSDataBase64DecodingIgnoreUnknownCharacters]mj_JSONObject];
-                                           
+                                            
+                                            NSData * base64Data = [[NSData alloc]initWithBase64EncodedString:[self encodeToPercentEscapeString:newStr]
+                                                                                                     options:NSDataBase64DecodingIgnoreUnknownCharacters];
+                                            NSArray *arr = [NSJSONSerialization JSONObjectWithData:base64Data
+                                                                                           options:NSJSONReadingMutableContainers
+                                                                                             error:&err];
+                                            
+//                                            NSArray * arr     = [[[NSData alloc]initWithBase64EncodedString:newStr
+//                                                                                                    options:NSDataBase64DecodingIgnoreUnknownCharacters]mj_JSONObject];
+                                            if (arr==nil)
+                                                return;
+                                            
                                             NSMutableArray * tempArr = [NSMutableArray arrayWithCapacity:0];
                                             [arr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                                                [tempArr addObject:[SignatureModel mj_objectWithKeyValues:obj]];
                                             }];
                                             
-                                            if (signatureView.trackArr !=nil) {
-                                                [signatureView.trackArr removeAllObjects];
-                                            }
+                                            [signatureView.trackArr removeAllObjects];
                                             signatureView.trackArr  = tempArr;
                                             
                                             [self onSignatureWriteAction];
@@ -223,5 +237,15 @@
                                         } andGet:YES];
 }
 
+- (NSString *)encodeToPercentEscapeString: (NSString *)input
+{
+    
+    NSString *encodedString = input;
+    NSString *decodedString  = (__bridge_transfer NSString *)CFURLCreateStringByReplacingPercentEscapesUsingEncoding(NULL,
+                                                                                                                     (__bridge CFStringRef)encodedString,
+                                                                                                                     CFSTR(""),
+                                                                                                                     CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding));
+    return decodedString;
+}
 
 @end
